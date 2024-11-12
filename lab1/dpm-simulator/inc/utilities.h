@@ -11,6 +11,7 @@
 #include "inc/dpm_policies.h"
 #include "inc/psm.h"
 
+
 /**
  * @brief Parse command line inputs and fill data structures accordingly
  *
@@ -26,7 +27,7 @@
  *
  */
 int parse_args(int argc, char *argv[], char *fwl, psm_t *psm, dpm_policy_t
-        *selected_policy, dpm_timeout_params *tparams, dpm_history_params *hparams);
+    *selected_policy, dpm_general_params *gparams, dpm_timeout_params *tparams, dpm_history_params *hparams);
 
 /**
  * @brief Print a message explaining command line parameters of the simulator

@@ -1,7 +1,7 @@
 #include "inc/utilities.h"
 
 int parse_args(int argc, char *argv[], char *fwl, psm_t *psm, dpm_policy_t
-        *selected_policy, dpm_timeout_params *tparams, dpm_history_params
+        *selected_policy, dpm_general_params *gparams, dpm_timeout_params *tparams, dpm_history_params
         *hparams)
 {
     int cur = 1;
@@ -10,6 +10,19 @@ int parse_args(int argc, char *argv[], char *fwl, psm_t *psm, dpm_policy_t
         if(strcmp(argv[cur], "-help") == 0) {
             print_command_line();
             return 0;
+        }
+
+        // set verbose level
+        if(strcmp(argv[cur], "-v") == 0) {
+            if(argc > cur + 1) {
+                if(strcmp(argv[++cur], "csv") == 0)
+                    gparams->verbose_level = CSV;
+                else if(strcmp(argv[cur], "verbose") == 0)
+                    gparams->verbose_level = VERBOSE;
+                else
+                    gparams->verbose_level = NONE;    
+            }
+            else return	0;
         }
 
         // set policy to timeout and get timeout value
@@ -21,17 +34,26 @@ int parse_args(int argc, char *argv[], char *fwl, psm_t *psm, dpm_policy_t
             else return	0;
         }
 
+        // set timeout sweep step
+        if(strcmp(argv[cur], "-s") == 0) {
+            *selected_policy = DPM_TIMEOUT;
+            if(argc > cur + 1) {
+                tparams->timeout_step = atof(argv[++cur]);
+            }
+            else return	0;
+        }
+
         // set policy to history based and get parameters and thresholds
         if(strcmp(argv[cur], "-h") == 0) {
             *selected_policy = DPM_HISTORY;
-            if(argc > cur + DPM_HIST_WIND_SIZE + 2){
+            /*if(argc > cur + DPM_HIST_WIND_SIZE + 2){
                 int i;
                 for(i = 0; i < DPM_HIST_WIND_SIZE; i++) {
                     hparams->alpha[i] = atof(argv[++cur]);
                 }
                 hparams->threshold[0] = atof(argv[++cur]);
                 hparams->threshold[1] = atof(argv[++cur]);
-            } else return 0;
+            } else return 0;*/
         }
 
         // set name of file for the power state machine

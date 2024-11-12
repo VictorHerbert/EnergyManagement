@@ -9,6 +9,14 @@
 #include "inc/psm.h"
 
 /**
+ * @brief Container for general simulation parameters
+ *
+ */
+typedef struct {
+    enum{NONE, CSV, VERBOSE} verbose_level;
+} dpm_general_params;
+
+/**
  * @defgroup dpm_params Parameters of DPM policies
  * @{
  */
@@ -45,6 +53,7 @@ typedef int dpm_policy_t;
 typedef struct {
     /* Day2: you can add/change stuff here */
     psm_time_t timeout;
+    psm_time_t timeout_step;
 } dpm_timeout_params;
 
 /**
@@ -79,7 +88,7 @@ typedef struct{
  * @return 1 on success, 0 on failure
  *
  */
-int dpm_simulate(psm_t psm, dpm_policy_t sel_policy, dpm_timeout_params
+int dpm_simulate(psm_t psm, dpm_policy_t sel_policy, dpm_general_params gparams, dpm_timeout_params
         tparams, dpm_history_params hparams, char* fwl);
 
 /**

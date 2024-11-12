@@ -1,6 +1,6 @@
 #include "inc/dpm_policies.h"
 
-int dpm_simulate(psm_t psm, dpm_policy_t sel_policy, dpm_timeout_params
+int dpm_simulate(psm_t psm, dpm_policy_t sel_policy, dpm_general_params gparams, dpm_timeout_params
 		tparams, dpm_history_params hparams, char* fwl)
 {
     dpm_work_item *work_queue;
@@ -114,20 +114,31 @@ int dpm_simulate(psm_t psm, dpm_policy_t sel_policy, dpm_timeout_params
     }
     free(work_queue);
 
-    printf("[sim] Active time in profile = %.6lfs \n", t_active_ideal * PSM_TIME_UNIT);
-    printf("[sim] Inactive time in profile = %.6lfs\n", t_inactive_ideal * PSM_TIME_UNIT);
-    printf("[sim] Tot. Time w/o DPM = %.6lfs, Tot. Time w DPM = %.6lfs\n",
-           t_total_no_dpm * PSM_TIME_UNIT, t_curr * PSM_TIME_UNIT);
-    for(int i = 0; i < PSM_N_STATES; i++) {
-        printf("[sim] Total time in state %s = %.6lfs\n", PSM_STATE_NAME(i),
-                t_state[i] * PSM_TIME_UNIT);
+    switch (gparams.verbose_level){
+    case VERBOSE:
+        printf("[sim] FILE = %s \n", fwl);
+        printf("[sim] TIMEOUT = %.f \n", tparams.timeout);
+        printf("[sim] Active time in profile = %.6lfs \n", t_active_ideal * PSM_TIME_UNIT);
+        printf("[sim] Inactive time in profile = %.6lfs\n", t_inactive_ideal * PSM_TIME_UNIT);
+        printf("[sim] Tot. Time w/o DPM = %.6lfs, Tot. Time w DPM = %.6lfs\n",
+            t_total_no_dpm * PSM_TIME_UNIT, t_curr * PSM_TIME_UNIT);
+        for(int i = 0; i < PSM_N_STATES; i++) {
+            printf("[sim] Total time in state %s = %.6lfs\n", PSM_STATE_NAME(i),
+                    t_state[i] * PSM_TIME_UNIT);
+        }
+        printf("[sim] Timeout waiting time = %.6lfs\n", t_waiting * PSM_TIME_UNIT);
+        printf("[sim] Transitions time = %.6lfs\n", t_tran_total * PSM_TIME_UNIT);
+        printf("[sim] N. of transitions = %d\n", n_tran_total);
+        printf("[sim] Energy for transitions = %.10fJ\n", e_tran_total * PSM_ENERGY_UNIT);
+        printf("[sim] Tot. Energy w/o DPM = %.10fJ, Tot. Energy w DPM = %.10fJ\n\n",
+                e_total_no_dpm * PSM_ENERGY_UNIT, e_total * PSM_ENERGY_UNIT);
+        break;
+    case CSV:
+        printf("%s, %f, %f, %f \n", fwl, tparams.timeout, e_total_no_dpm * PSM_ENERGY_UNIT, e_total * PSM_ENERGY_UNIT);        
+    default:
+        break;
     }
-    printf("[sim] Timeout waiting time = %.6lfs\n", t_waiting * PSM_TIME_UNIT);
-    printf("[sim] Transitions time = %.6lfs\n", t_tran_total * PSM_TIME_UNIT);
-    printf("[sim] N. of transitions = %d\n", n_tran_total);
-    printf("[sim] Energy for transitions = %.10fJ\n", e_tran_total * PSM_ENERGY_UNIT);
-    printf("[sim] Tot. Energy w/o DPM = %.10fJ, Tot. Energy w DPM = %.10fJ\n",
-            e_total_no_dpm * PSM_ENERGY_UNIT, e_total * PSM_ENERGY_UNIT);
+    
 	return 1;
 }
 
@@ -136,12 +147,14 @@ int dpm_decide_state(psm_state_t *next_state, psm_state_t prev_state, psm_time_t
         psm_time_t t_inactive_start, psm_time_t *history, dpm_policy_t policy,
         dpm_timeout_params tparams, dpm_history_params hparams)
 {
+    psm_time_t elapsed_time = t_curr - t_inactive_start;
     switch (policy) {
 
         case DPM_TIMEOUT:
             /* Day 2: EDIT */
-            if(t_curr > t_inactive_start + tparams.timeout) {
-                *next_state = PSM_STATE_IDLE;
+            if(elapsed_time > tparams.timeout) {
+                *next_state = PSM_STATE_SLEEP;
+                //*next_state = PSM_STATE_IDLE;
             } else {
                 *next_state = PSM_STATE_RUN;
             }
@@ -149,7 +162,10 @@ int dpm_decide_state(psm_state_t *next_state, psm_state_t prev_state, psm_time_t
 
         case DPM_HISTORY:
             /* Day 3: EDIT */
-            *next_state = PSM_STATE_RUN;
+            if(elapsed_time >= history[DPM_HIST_WIND_SIZE-1])
+                *next_state = PSM_STATE_SLEEP;
+            else
+                *next_state = PSM_STATE_RUN;
             break;
 
         default:

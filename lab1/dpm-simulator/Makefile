@@ -14,38 +14,36 @@ SRCS := $(wildcard $(SRC_DIR)/*.c)
 OBJS := $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(SRCS))
 
 # Output executable
-TARGET := $(BUILD_DIR)/dpm-simulator
-LOG := $(BUILD_DIR)/out.log
+TARGET := $(BUILD_DIR)/dpm-simulator.exe
+
+WORKLOADS := workloads/w1.txt workloads/w2.txt
+TIMEOUTS := 0 1 2 3 4 5
+TIMEOUT_LOG := $(BUILD_DIR)/timeout.log
 
 # Default target
 all: $(TARGET)
 
 # Link object files to create the executable
 $(TARGET): $(OBJS)
-	@mkdir -p $(BUILD_DIR)
+	@wsl mkdir -p $(BUILD_DIR)
 	$(CC) $(CFLAGS) -o $@ $^
 
 # Compile each .c file to .o file in build directory
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
-	@mkdir -p $(BUILD_DIR)
+	@wsl mkdir -p $(BUILD_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
+$(TIMEOUT_LOG): $(TARGET)
+	./$(TARGET) $(foreach n,$(TIMEOUTS),-t $(n)) -v csv $(foreach n,$(WORKLOADS),-wl $(n)) -psm example/psm.txt > $(TIMEOUT_LOG)
 
-$(LOG): $(TARGET)
-	./$(TARGET) -t 200 -s 50 -v csv -psm example/psm.txt > $(LOG)
-
-$(BUILD_DIR)/plot.png: $(LOG)
-	python3 scripts/plotter.py $(LOG)
-
-log: $(LOG)
-plot: $(BUILD_DIR)/plot.png
-
+timeout: $(TIMEOUT_LOG)
+	
 docs: Doxyfile $(HEADERS) $(wildcard src/*.c)
 	doxygen $<
 
 # Clean build files
 clean:
-	rm -rf $(BUILD_DIR)
+	@wsl rm -rf $(BUILD_DIR)
 
 # Phony targets
-.PHONY: all clean docs plot log
+.PHONY: all clean docs timeout

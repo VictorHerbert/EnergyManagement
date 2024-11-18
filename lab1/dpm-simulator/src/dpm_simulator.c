@@ -22,19 +22,20 @@ int main(int argc, char *argv[]) {
         return -1;
     }
     double max_timeout = tparams.timeout;
-    //psm_print(psm);    
+    if (gparams.verbose_level == VERBOSE)
+        psm_print(psm);    
 
     if (gparams.verbose_level == CSV)
         printf("file,timeout,energy_without_dpm,energy_with_dpm\n");
 
     if(sel_policy == DPM_TIMEOUT)
-        for(double timeout = 0; timeout < max_timeout; timeout += max_timeout/tparams.timeout_step){
-            tparams.timeout = timeout;
-            dpm_simulate(psm, sel_policy, gparams, tparams, hparams, "workloads/w1.txt");
-            dpm_simulate(psm, sel_policy, gparams, tparams, hparams, "workloads/w2.txt");
-            //printf("after-> %f\n", tparams.timeout);
-        }
+        for(int i = 0; i < gparams.workload_count; i++)
+            for(int j = 0; j < tparams.timeout_count; j++){
+                tparams.timeout = tparams.timeouts[j];
+
+                dpm_simulate(psm, sel_policy, gparams, tparams, hparams, gparams.workloads[i]);
+            }
     else if(sel_policy == DPM_HISTORY){
-        dpm_simulate(psm, sel_policy, gparams, tparams, hparams, "workloads/w2.txt");
+        dpm_simulate(psm, sel_policy, gparams, tparams, hparams, fwl);
     }
 }

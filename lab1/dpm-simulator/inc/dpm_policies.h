@@ -8,12 +8,15 @@
 
 #include "inc/psm.h"
 
+#define MAX_WORKLOAD_COUNT 100
 /**
  * @brief Container for general simulation parameters
  *
  */
 typedef struct {
     enum{NONE, CSV, VERBOSE} verbose_level;
+    char* workloads[MAX_WORKLOAD_COUNT];
+    size_t workload_count;
 } dpm_general_params;
 
 /**
@@ -21,7 +24,7 @@ typedef struct {
  * @{
  */
 /** history window size for history-based policies */
-#define DPM_HIST_WIND_SIZE 5
+#define DPM_HIST_WIND_SIZE 16
 /** number of thresholds for history-based policies */
 #define DPM_N_THRESHOLDS 2
 /** @} */
@@ -47,13 +50,16 @@ typedef struct {
 /** Type alias for DPM policy IDs */
 typedef int dpm_policy_t;
 
+#define MAX_TIMEOUT_COUNT 1000
 /**
  * @brief Container for timeout policy parameters (can store more than 1 timeout)
  */
 typedef struct {
     /* Day2: you can add/change stuff here */
     psm_time_t timeout;
-    psm_time_t timeout_step;
+    
+    psm_time_t timeouts[MAX_TIMEOUT_COUNT];
+    size_t timeout_count;
 } dpm_timeout_params;
 
 /**

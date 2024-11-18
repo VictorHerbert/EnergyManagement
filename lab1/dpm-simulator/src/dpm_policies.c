@@ -149,7 +149,6 @@ int dpm_decide_state(psm_state_t *next_state, psm_state_t prev_state, psm_time_t
 {
     psm_time_t elapsed_time = t_curr - t_inactive_start;
     switch (policy) {
-
         case DPM_TIMEOUT:
             /* Day 2: EDIT */
             if(elapsed_time > tparams.timeout) {
@@ -162,7 +161,12 @@ int dpm_decide_state(psm_state_t *next_state, psm_state_t prev_state, psm_time_t
 
         case DPM_HISTORY:
             /* Day 3: EDIT */
-            if(elapsed_time >= history[DPM_HIST_WIND_SIZE-1])
+            float acum = 0;
+            for (int i=0; i<1; i++) {
+                acum += history[DPM_HIST_WIND_SIZE-1-i];
+            }
+
+            if(acum < 100)
                 *next_state = PSM_STATE_SLEEP;
             else
                 *next_state = PSM_STATE_RUN;
@@ -190,6 +194,14 @@ void dpm_update_history(psm_time_t *h, psm_time_t new_inactive)
 		h[i] = h[i+1];
 	}
 	h[DPM_HIST_WIND_SIZE-1] = new_inactive;
+    //printf("%f,", new_inactive);
+
+    
+	/*for (int i=0; i<DPM_HIST_WIND_SIZE-1; i++)
+        printf("%.0f \t\t", h[i]);
+    printf("\n");*/
+		
+	
 }
 
 /* initialize work queue */

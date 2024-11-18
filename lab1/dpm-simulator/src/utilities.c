@@ -5,6 +5,9 @@ int parse_args(int argc, char *argv[], char *fwl, psm_t *psm, dpm_policy_t
         *hparams)
 {
     int cur = 1;
+
+    tparams->timeout_count = 0;
+    gparams->workload_count = 0;
     while(cur < argc) {
 
         if(strcmp(argv[cur], "-help") == 0) {
@@ -20,7 +23,7 @@ int parse_args(int argc, char *argv[], char *fwl, psm_t *psm, dpm_policy_t
                 else if(strcmp(argv[cur], "verbose") == 0)
                     gparams->verbose_level = VERBOSE;
                 else
-                    gparams->verbose_level = NONE;    
+                    gparams->verbose_level = NONE;
             }
             else return	0;
         }
@@ -28,18 +31,8 @@ int parse_args(int argc, char *argv[], char *fwl, psm_t *psm, dpm_policy_t
         // set policy to timeout and get timeout value
         if(strcmp(argv[cur], "-t") == 0) {
             *selected_policy = DPM_TIMEOUT;
-            if(argc > cur + 1) {
-                tparams->timeout = atof(argv[++cur]);
-            }
-            else return	0;
-        }
-
-        // set timeout sweep step
-        if(strcmp(argv[cur], "-s") == 0) {
-            *selected_policy = DPM_TIMEOUT;
-            if(argc > cur + 1) {
-                tparams->timeout_step = atof(argv[++cur]);
-            }
+            if(argc > cur + 1 && tparams->timeout_count < MAX_TIMEOUT_COUNT)
+                tparams->timeouts[tparams->timeout_count++] = atof(argv[++cur]);
             else return	0;
         }
 
@@ -65,9 +58,10 @@ int parse_args(int argc, char *argv[], char *fwl, psm_t *psm, dpm_policy_t
         // set name of file for the workload
         if(strcmp(argv[cur], "-wl") == 0)
         {
-            if(argc > cur + 1)
+            if(argc > cur + 1 && gparams->workload_count < MAX_WORKLOAD_COUNT)
             {
-                strcpy(fwl, argv[++cur]);
+                //strcpy(fwl, argv[++cur]);
+                gparams->workloads[gparams->workload_count++] = *(argv + ++cur);                
             }
             else return	0;
         }

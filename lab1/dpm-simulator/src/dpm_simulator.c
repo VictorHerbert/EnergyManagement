@@ -30,11 +30,9 @@ int main(int argc, char *argv[]) {
     if(sel_policy == DPM_TIMEOUT)
         for(double timeout = 0; timeout < max_timeout; timeout += max_timeout/tparams.timeout_step){
             tparams.timeout = timeout;
-            dpm_simulate(psm, sel_policy, gparams, tparams, hparams, "workloads/w1.txt");
-            dpm_simulate(psm, sel_policy, gparams, tparams, hparams, "workloads/w2.txt");
-            //printf("after-> %f\n", tparams.timeout);
+            dpm_simulate(psm, sel_policy, gparams, tparams, hparams, fwl);
         }
     else if(sel_policy == DPM_HISTORY){
-        dpm_simulate(psm, sel_policy, gparams, tparams, hparams, "workloads/w2.txt");
+        dpm_simulate(psm, sel_policy, gparams, tparams, hparams, fwl);
     }
 }

@@ -1,18 +1,43 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[33]:
+
+
 import sys
 import pandas as pd
 from matplotlib import pyplot as plt
 
 
-df = pd.read_csv(sys.argv[1])
+# In[ ]:
+
+
+IN_FILE = '../build/w1_timeout.log'
+OUT_FILE = '../build/w1_timeout.png'
+
+
+# In[34]:
+
+if __name__ == '__main__':
+    IN_FILE = sys.argv[1]
+    OUT_FILE = sys.argv[2]
+
+
+# In[35]:
+
+
+df = pd.read_csv(IN_FILE)
+df['energy_save_percent'] = (df['energy_without_dpm'] - df['energy_with_dpm'])/df['energy_without_dpm']
 df.head()
 
 
-dfs = [df[df['file'] == file] for file in df['file'].unique()]
-dfs[0]
+# In[41]:
 
 
 plt.grid()
-for file_df in dfs:
-    plt.plot(file_df['timeout'], file_df['energy_with_dpm'])
+plt.xlabel('Timeout (s)')
+plt.ylabel('Energy Save (%)')
+plt.plot(df['timeout'], df['energy_save_percent'])
 
-plt.savefig('build/plot.png')
+plt.savefig(OUT_FILE)
+

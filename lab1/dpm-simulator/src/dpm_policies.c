@@ -1,5 +1,68 @@
 #include "inc/dpm_policies.h"
 
+#define false 0
+#define true 1
+
+int decision_tree(psm_time_t* h) {
+    if (h[1] <= 38.50) {
+        if (h[6] <= 3.50) {
+            if (h[3] <= 119974.50) {
+                if (h[5] <= 3.50) {
+                    if (h[1] <= 3.50) {
+                        if (h[0] <= 2.50) {
+                            return false;
+                        } else {
+                            if (h[0] <= 59980.00) {
+                                return true;
+                            } else {
+                                return false;
+                            }
+                        }
+                    } else {
+                        return false;
+                    }
+                } else {
+                    if (h[1] <= 3.50) {
+                        return false;
+                    } else {
+                        if (h[4] <= 3.50) {
+                            if (h[0] <= 59952.00) {
+                                return true;
+                            } else {
+                                return false;
+                            }
+                        } else {
+                            return false;
+                        }
+                    }
+                }
+            } else {
+                return true;
+            }
+        } else {
+            if (h[5] <= 2.50) {
+                if (h[3] <= 3.50) {
+                    return false;
+                } else {
+                    return true;
+                }
+            } else {
+                return false;
+            }
+        }
+    } else {
+        if (h[0] <= 38.50) {
+            if (h[1] <= 119882.00) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return true;
+        }
+    }
+}
+
 int dpm_simulate(psm_t psm, dpm_policy_t sel_policy, dpm_general_params gparams, dpm_timeout_params
 		tparams, dpm_history_params hparams, char* fwl)
 {
@@ -162,7 +225,7 @@ int dpm_decide_state(psm_state_t *next_state, psm_state_t prev_state, psm_time_t
 
         case DPM_HISTORY:
             /* Day 3: EDIT */
-            if(elapsed_time >= history[DPM_HIST_WIND_SIZE-1])
+            if(decision_tree(history))
                 *next_state = PSM_STATE_SLEEP;
             else
                 *next_state = PSM_STATE_RUN;

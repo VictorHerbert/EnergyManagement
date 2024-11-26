@@ -1,0 +1,4 @@
+scikit-image==0.24.0
+ipykernel==6.29.5
+ipyplot
+matplot
